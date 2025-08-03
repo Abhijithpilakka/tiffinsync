@@ -1,7 +1,10 @@
-import React from 'react';
-import Layout from '../components/layout';
+import React, { useContext } from 'react';
+import Layout from '../components/Layout';
+import { AuthContext } from '../context/AuthContext';
 
 const Profile = () => {
+  const { logout } = useContext(AuthContext);
+
   const user = {
     name: 'Abhijith P',
     email: 'abhijith@example.com',
@@ -12,16 +15,18 @@ const Profile = () => {
   return (
     <Layout>
       <h1 className="text-xl font-semibold mb-4">👤 Your Profile</h1>
-      <div className="bg-white shadow-md rounded-lg p-4">
-        <p className="text-sm text-gray-500">Name:</p>
-        <p className="text-lg font-semibold mb-2">{user.name}</p>
-        <p className="text-sm text-gray-500">Email:</p>
-        <p className="text-md mb-2">{user.email}</p>
-        <p className="text-sm text-gray-500">Phone:</p>
-        <p className="text-md mb-2">{user.phone}</p>
-        <p className="text-sm text-gray-500">Joined:</p>
-        <p className="text-md">{user.joined}</p>
+      <div className="bg-white p-4 rounded shadow mb-4">
+        <p><b>Name:</b> {user.name}</p>
+        <p><b>Email:</b> {user.email}</p>
+        <p><b>Phone:</b> {user.phone}</p>
+        <p><b>Joined:</b> {user.joined}</p>
       </div>
+      <button
+        onClick={() => { logout(); window.location.href = '/login'; }}
+        className="bg-red-600 text-white w-full py-2 rounded"
+      >
+        Logout
+      </button>
     </Layout>
   );
 };
