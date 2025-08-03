@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.database import SessionLocal
-from app.models.meal import Meal
+from app.models import Meal
 from app.schemas.meal import MealCreate, MealResponse
 
 router = APIRouter(prefix="/meals", tags=["Meals"])

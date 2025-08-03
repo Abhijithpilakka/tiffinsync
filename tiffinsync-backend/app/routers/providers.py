@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.database import SessionLocal
-from app.models.provider import Provider
+from app.models import Provider
 from app.schemas.provider import ProviderCreate, ProviderResponse
 
 router = APIRouter(prefix="/providers", tags=["Providers"])

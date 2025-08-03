@@ -1,9 +1,14 @@
 from fastapi import FastAPI
+from .database import Base, engine
+from .routers import auth, meals, providers
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import auth, meals, providers
 
-app = FastAPI(title="TiffinSync API")
+app = FastAPI()
 
+# Create tables automatically
+Base.metadata.create_all(bind=engine)
+
+# CORS setup
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -12,6 +17,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Routers
 app.include_router(auth.router)
 app.include_router(meals.router)
 app.include_router(providers.router)
@@ -19,3 +25,4 @@ app.include_router(providers.router)
 @app.get("/")
 def root():
     return {"message": "TiffinSync API running!"}
+
