@@ -1,0 +1,39 @@
+# -------------------------
+# Backend (FastAPI - Python)
+# -------------------------
+# Virtual environment
+tiffinsync-backend/venv/
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment variables
+tiffinsync-backend/.env
+
+# SQLite (if used for testing)
+*.db
+*.sqlite3
+
+# VSCode Python environment
+.vscode/
+
+# -------------------------
+# Frontend (React - Node.js)
+# -------------------------
+# Dependencies
+tiffinsync-frontend/node_modules/
+
+# Build output
+tiffinsync-frontend/dist/
+tiffinsync-frontend/build/
+
+# Logs
+tiffinsync-frontend/npm-debug.log*
+tiffinsync-frontend/yarn-debug.log*
+tiffinsync-frontend/yarn-error.log*
+
+# Environment variables
+tif
