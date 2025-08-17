@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import SessionLocal
-from app.models import User
-
-from app.schemas.user import UserCreate, UserResponse
-from app.utils.auth_utils import hash_password, verify_password, create_access_token, create_refresh_token, verify_token
-import os
+from app.models import User, Provider
+from app.schemas.user import UserRegister, UserResponse, OTPRequest, OTPVerify
+from app.utils.auth_utils import hash_password, create_access_token
+from app.utils.otp import generate_mock_otp, verify_mock_otp
+import uuid
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -17,29 +17,54 @@ def get_db():
         db.close()
 
 @router.post("/register", response_model=UserResponse)
-def register(user: UserCreate, db: Session = Depends(get_db)):
-    existing_user = db.query(User).filter(User.email == user.email).first()
+def register(user_data: UserRegister, db: Session = Depends(get_db)):
+    existing_user = db.query(User).filter(User.phone == user_data.phone).first()
     if existing_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
-    new_user = User(name=user.name, email=user.email, password=hash_password(user.password))
+        raise HTTPException(status_code=400, detail="Phone already registered")
+
+    hashed_password = hash_password(user_data.password) if user_data.password else None
+
+    new_user = User(
+        id=uuid.uuid4(),
+        name=user_data.name,
+        phone=user_data.phone,
+        email=user_data.email,
+        password=hashed_password,
+        role=user_data.role,
+        address=user_data.address,
+        latitude=user_data.latitude,
+        longitude=user_data.longitude,
+    )
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+
+    if user_data.role == "provider":
+        if not user_data.delivery_radius:
+            raise HTTPException(status_code=400, detail="Delivery radius required for providers")
+
+        new_provider = Provider(
+            user_id=new_user.id,
+            delivery_radius=user_data.delivery_radius
+        )
+        db.add(new_provider)
+        db.commit()
+
     return new_user
 
-@router.post("/login")
-def login(email: str, password: str, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == email).first()
-    if not user or not verify_password(password, user.password):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-    return {
-        "access_token": create_access_token({"user_id": user.id}),
-        "refresh_token": create_refresh_token({"user_id": user.id})
-    }
+@router.post("/send-otp")
+def send_otp(data: OTPRequest):
+    otp = generate_mock_otp(data.phone)
+    return {"message": "OTP sent successfully (mocked)"}
 
-@router.post("/refresh")
-def refresh(refresh_token: str):
-    payload = verify_token(refresh_token, secret=os.getenv("JWT_REFRESH_SECRET"))
-    if not payload:
-        raise HTTPException(status_code=401, detail="Invalid or expired refresh token")
-    return {"access_token": create_access_token({"user_id": payload["user_id"]})}
+@router.post("/verify-otp")
+def verify_otp(data: OTPVerify, db: Session = Depends(get_db)):
+    if not verify_mock_otp(data.phone, data.otp):
+        raise HTTPException(status_code=400, detail="Invalid or expired OTP")
+
+    user = db.query(User).filter(User.phone == data.phone).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    access_token = create_access_token({"sub": str(user.id)})
+    return {"access_token": access_token, "token_type": "bearer"}

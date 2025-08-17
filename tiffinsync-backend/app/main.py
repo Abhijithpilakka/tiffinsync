@@ -5,8 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-# Create tables automatically
-Base.metadata.create_all(bind=engine)
+
 
 # CORS setup
 app.add_middleware(

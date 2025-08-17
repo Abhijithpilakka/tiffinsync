@@ -10,6 +10,9 @@ __pycache__/
 *.pyo
 *.pyd
 
+# Alembic migrations
+alembic/versions/
+
 # Environment variables
 tiffinsync-backend/.env
 
