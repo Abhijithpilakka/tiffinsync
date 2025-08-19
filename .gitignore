@@ -40,3 +40,6 @@ tiffinsync-frontend/yarn-error.log*
 
 # Environment variables
 tif
+
+
+.env
