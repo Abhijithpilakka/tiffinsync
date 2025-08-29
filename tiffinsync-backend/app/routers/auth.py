@@ -2,14 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import SessionLocal
 from app.models import User, Provider
-from app.schemas.user import UserRegister, UserResponse, OTPRequest, OTPVerify
+from app.schemas.user import UserRegister, UserResponse, OTPRequest, OTPVerify, TokenResponse, RefreshTokenRequest, AccessTokenResponse
 from app.utils.auth_utils import hash_password, create_access_token, create_refresh_token, verify_token
 from app.utils.otp import generate_mock_otp, verify_mock_otp
-from app.schemas.user import (
-    OTPRequest, OTPVerify,
-    TokenResponse, RefreshTokenRequest, AccessTokenResponse
-)
-from app.utils.auth_utils import create_access_token, create_refresh_token, verify_token
 import uuid
 import os
 
@@ -26,6 +21,10 @@ def get_db():
 
 @router.post("/register", response_model=UserResponse)
 def register(user_data: UserRegister, db: Session = Depends(get_db)):
+    # Check if phone was OTP verified
+    if not verify_mock_otp(user_data.phone, None, check_only=True):
+        raise HTTPException(status_code=400, detail="Phone number not verified via OTP")
+
     existing_user = db.query(User).filter(User.phone == user_data.phone).first()
     if existing_user:
         raise HTTPException(status_code=400, detail="Phone already registered")
@@ -77,19 +76,10 @@ def verify_otp(data: OTPVerify, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.phone == phone).first()
 
     if not user:
-        # Auto-register new user
-        new_user = User(
-            id=uuid.uuid4(),
-            name="New User",        # 👈 you can later update via profile
-            phone=phone,
-            role="user",            # 👈 default role
-        )
-        db.add(new_user)
-        db.commit()
-        db.refresh(new_user)
-        user = new_user
+        # Return response indicating OTP verified but registration needed
+        return {"status": "otp_verified", "new_user": True, "phone": phone}
 
-    # Create JWT tokens
+    # Create JWT tokens for existing users only
     access_token = create_access_token({"sub": str(user.id)})
     refresh_token = create_refresh_token({"sub": str(user.id)})
 
