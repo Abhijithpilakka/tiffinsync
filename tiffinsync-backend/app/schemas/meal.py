@@ -1,14 +1,20 @@
 from pydantic import BaseModel
+from datetime import date
+from typing import Optional
 
 class MealCreate(BaseModel):
-    type: str
-    description: str
-    provider_id: int
+    name: str
+    description: Optional[str] = None
+    price: float
+    date: date
 
 class MealResponse(BaseModel):
-    id: int
-    type: str
-    description: str
+    id: str
+    name: str
+    description: Optional[str]
+    price: float
+    date: date
+    provider_id: str  # still returned in response
 
     class Config:
-        orm_mode = True
+        from_attributes = True

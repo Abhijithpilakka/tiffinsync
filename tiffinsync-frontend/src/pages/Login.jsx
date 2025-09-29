@@ -1,44 +1,36 @@
 import React, { useState, useContext } from 'react';
-import { loginUser } from '../services/authService';
+import { useNavigate } from 'react-router-dom';
+import { requestOtp } from '../services/authService';
 import { AuthContext } from '../context/AuthContext';
 
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const { login } = useContext(AuthContext);
+  const [phone, setPhone] = useState('');
+  const navigate = useNavigate();
 
   const handleLogin = async () => {
     try {
-      const res = await loginUser(email, password);
-      login(res.access_token, res.refresh_token);
-      window.location.href = '/';
+      await requestOtp(phone);
+      navigate('/verify-otp', { state: { phone } });
     } catch {
-      alert('Invalid credentials');
+      alert('Failed to send OTP');
     }
   };
 
   return (
-    <div className="flex flex-col max-w-sm mx-auto mt-20 p-4 border rounded shadow">
-      <h1 className="text-lg font-bold mb-4">Login</h1>
+    <div className="flex flex-col max-w-sm mx-auto mt-20 p-6 border rounded shadow">
+      <h1 className="text-xl font-semibold mb-6">Login</h1>
       <input
-        type="email"
-        placeholder="Email"
-        className="border p-2 mb-2 rounded"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
-      <input
-        type="password"
-        placeholder="Password"
-        className="border p-2 mb-2 rounded"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
+        type="tel"
+        placeholder="Mobile Number"
+        className="border p-3 mb-4 rounded"
+        value={phone}
+        onChange={(e) => setPhone(e.target.value)}
       />
       <button
         onClick={handleLogin}
-        className="bg-gray-800 text-white py-2 rounded"
+        className="bg-gray-900 text-white py-3 rounded"
       >
-        Login
+        Send OTP
       </button>
     </div>
   );

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from .database import Base, engine
-from .routers import auth, meals, providers
+from .routers import auth, meals, providers, subscriptions
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -20,6 +20,7 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(meals.router)
 app.include_router(providers.router)
+app.include_router(subscriptions.router)
 
 @app.get("/")
 def root():

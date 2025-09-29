@@ -1,10 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import SessionLocal
 from app.models import Subscription, User, Provider
 from app.dependencies.auth import get_current_user
+from app.schemas.subscriptions import SubscriptionResponse
 
 router = APIRouter(prefix="/subscriptions", tags=["Subscriptions"])
+
 
 def get_db():
     db = SessionLocal()
@@ -17,7 +19,7 @@ def get_db():
 # ----------------------
 # Subscribe to a Provider
 # ----------------------
-@router.post("/{provider_id}")
+@router.post("/{provider_id}", response_model=SubscriptionResponse)
 def subscribe(
     provider_id: str,
     db: Session = Depends(get_db),
@@ -26,12 +28,10 @@ def subscribe(
     if current_user.role != "user":
         raise HTTPException(status_code=403, detail="Only users can subscribe")
 
-    # Check provider exists
     provider = db.query(Provider).filter(Provider.id == provider_id).first()
     if not provider:
         raise HTTPException(status_code=404, detail="Provider not found")
 
-    # Check already subscribed
     existing = db.query(Subscription).filter(
         Subscription.user_id == current_user.id,
         Subscription.provider_id == provider_id
@@ -43,7 +43,7 @@ def subscribe(
     db.add(subscription)
     db.commit()
     db.refresh(subscription)
-    return {"detail": "Subscribed successfully", "subscription_id": str(subscription.id)}
+    return subscription
 
 
 # ----------------------
@@ -73,7 +73,7 @@ def unsubscribe(
 # ----------------------
 # Get My Subscriptions (User)
 # ----------------------
-@router.get("/me")
+@router.get("/me", response_model=list[SubscriptionResponse])
 def get_my_subscriptions(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -88,7 +88,7 @@ def get_my_subscriptions(
 # ----------------------
 # Get Subscribers (Provider)
 # ----------------------
-@router.get("/provider")
+@router.get("/provider", response_model=list[SubscriptionResponse])
 def get_my_subscribers(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),

@@ -1,14 +1,19 @@
 from pydantic import BaseModel
+from typing import Optional
 
 class ProviderCreate(BaseModel):
-    name: str
-    location: str
+    delivery_radius: float
+    latitude: float
+    longitude: float
 
 class ProviderResponse(BaseModel):
-    id: int
+    id: str   # UUID as string
+    user_id: str
+    delivery_radius: float
+    latitude: float
+    longitude: float
     name: str
-    location: str
-    rating: int
+    address: Optional[str] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True

@@ -1,11 +1,14 @@
 import API from './api';
+import axios from 'axios';
 
-export const registerUser = async (data) => {
-  const res = await API.post('/auth/register', data);
+const API_URL = 'http://127.0.0.1:8000/auth';
+
+export const requestOtp = async (phone) => {
+  const res = await API.post('/auth/send-otp', { phone });
   return res.data;
 };
 
-export const loginUser = async (email, password) => {
-  const res = await API.post('/auth/login', null, { params: { email, password } });
+export const verifyOtp = async (phone, otp) => {
+  const res = await API.post('/verify-otp', { phone, otp });
   return res.data;
 };
