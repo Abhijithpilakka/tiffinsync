@@ -18,6 +18,7 @@ const Register = () => {
   const handleRegister = (e) => {
     e.preventDefault();
     // TODO: Call backend `/auth/register` with formData
+    
     console.log("Registering user:", formData);
 
     // After successful registration

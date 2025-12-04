@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { verifyOtp } from "../services/authService";
 
 const VerifyOtp = () => {
   const [otp, setOtp] = useState("");
@@ -10,17 +11,7 @@ const VerifyOtp = () => {
   const handleVerify = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://127.0.0.1:8000/auth/verify-otp", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ phone, otp }),
-      });
-      if (!response.ok) {
-        throw new Error("OTP verification failed");
-      }
-      const data = await response.json();
+      const data = await verifyOtp(phone, otp);
       if (data.new_user) {
         navigate("/register", { state: { phone } });
       } else if (data.tokens && data.user) {
